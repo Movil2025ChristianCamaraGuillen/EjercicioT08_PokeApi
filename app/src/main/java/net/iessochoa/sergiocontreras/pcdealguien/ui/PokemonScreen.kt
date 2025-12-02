@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import net.iessochoa.sergiocontreras.pcdealguien.data.PokemonSpecies
+import net.iessochoa.sergiocontreras.pcdealguien.ui.components.DynamicSelectTextField
 import net.iessochoa.sergiocontreras.pcdealguien.ui.theme.PCdeAlguienTheme
 import net.iessochoa.sergiocontreras.pcdealguien.ui.theme.Typography
 
@@ -49,7 +50,7 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(), modifier: Modifier 
     val generations = (1..8).toList() // 8 Generaciones
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Pokedex Retrofit", style = Typography.headlineMedium)
@@ -57,22 +58,15 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(), modifier: Modifier 
         Spacer(modifier = Modifier.height(16.dp))
 
         // --- SELECTOR DE GENERACIÓN (Ya implementado) ---
-        Box {
-            Button(onClick = { expanded = true }) {
-                Text(text = "Generación $selectedGen")
+        DynamicSelectTextField(
+            selectedValue = selectedGen.toString(),
+            options = generations.map { it.toString() },
+            label = "Generación",
+            onValueChangedEvent = {
+                selectedGen = it.toInt()
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                generations.forEach { gen ->
-                    DropdownMenuItem(
-                        text = { Text("Generación $gen") },
-                        onClick = {
-                            selectedGen = gen
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
+        )
+
 
         Spacer(modifier = Modifier.height(10.dp))
 
