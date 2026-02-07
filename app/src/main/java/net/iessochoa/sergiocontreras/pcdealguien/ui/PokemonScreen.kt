@@ -32,22 +32,25 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import net.iessochoa.sergiocontreras.pcdealguien.data.PokemonSpecies
+import net.iessochoa.sergiocontreras.pcdealguien.network.PokemonDto
 import net.iessochoa.sergiocontreras.pcdealguien.ui.components.DynamicSelectTextField
 import net.iessochoa.sergiocontreras.pcdealguien.ui.theme.PCdeAlguienTheme
 import net.iessochoa.sergiocontreras.pcdealguien.ui.theme.Typography
 
 @Composable
-fun PokemonScreen(viewModel: PokemonViewModel = viewModel(), modifier: Modifier = Modifier) {
+fun PokemonScreen(viewModel: PokemonViewModel = viewModel(factory = PokemonViewModel.Factory), modifier: Modifier = Modifier) {
     // Observamos el estado del ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val selectedGen = uiState.selectedGeneration
+    val currentState = uiState.currentState
+    val totalGeneration = uiState.totalGeneration
 
-    val pokemonList = uiState.pokemonList
+    //val pokemonList = uiState.pokemonList
 
     // Variables para el Dropdown (UI ya resuelta)
     var expanded by remember { mutableStateOf(false) }
-    var selectedGen by remember { mutableStateOf(1) }
-    val generations = (1..8).toList() // 8 Generaciones
+    //var selectedGen by remember { mutableStateOf(1) }
+    //val generations = (1..8).toList() // 8 Generaciones
 
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
@@ -60,11 +63,9 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(), modifier: Modifier 
         // --- SELECTOR DE GENERACIÓN (Ya implementado) ---
         DynamicSelectTextField(
             selectedValue = selectedGen.toString(),
-            options = generations.map { it.toString() },
+            options = (1..totalGeneration).toList().map { it.toString() },
             label = "Generación",
-            onValueChangedEvent = {
-                selectedGen = it.toInt()
-            }
+            onValueChangedEvent = { viewModel.onValueChangedEvent(it) }
         )
 
 
@@ -84,21 +85,24 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(), modifier: Modifier 
         Spacer(modifier = Modifier.height(16.dp))
 
         // --- LISTA DE RESULTADOS ---
+        if (uiState.currentState is RequestStatus.Success){
         LazyVerticalGrid(
             modifier = Modifier.weight(1f),
             columns = GridCells.Fixed(2), // 2 columnas
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            val pokemonList = (uiState.currentState as RequestStatus.Success).pokemonList
             items(pokemonList) { pokemon ->
                 PokemonItem(pokemon)
             }
         }
     }
+    }
 }
 
 @Composable
-fun PokemonItem(pokemon: PokemonSpecies) {
+fun PokemonItem(pokemon: PokemonDto) {
     Card(
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
@@ -107,11 +111,11 @@ fun PokemonItem(pokemon: PokemonSpecies) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(8.dp).fillMaxWidth()
         ) {
-            // TODO 5: Construir la URL de la imagen
             // 1. Obtener el ID desde la URL del pokemon (pokemon.url)
             // 2. Usar: https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png
-
-            val imageUrl = "" // <-- IMPLEMENTAR AQUÍ LOGICA
+            val splittedUrl = pokemon.url.split("/")
+            val id = splittedUrl[splittedUrl.size - 2]
+            val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" // <-- IMPLEMENTAR AQUÍ LOGICA
 
             AsyncImage(
                 model = imageUrl,
