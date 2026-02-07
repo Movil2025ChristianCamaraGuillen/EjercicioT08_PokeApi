@@ -19,10 +19,10 @@ class PokemonViewModel(
     pokemonRepository: PokemonRepository
 ): ViewModel() {
     // Estado para la lista de pokemons
-    val _uiState = MutableStateFlow(PokemonScreenUiState())
+    private val _uiState = MutableStateFlow(PokemonScreenUiState())
     val uiState: StateFlow<PokemonScreenUiState> = _uiState.asStateFlow()
 
-    val repository = pokemonRepository
+    private val repository = pokemonRepository
 
     // Función para llamar a la API
     fun fetchPokemonByGeneration(generationId: Int) {
@@ -39,11 +39,12 @@ class PokemonViewModel(
                         currentState = RequestStatus.Success(response)
                     )
                 }
-                // TODO 4: Llamar a RetrofitClient y actualizar _pokemonList
-                // val response = RetrofitClient.service.getGeneration(generationId)
-                // _pokemonList.value = ...
-
             } catch (e: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        currentState = RequestStatus.Error
+                    )
+                }
                 e.printStackTrace()
             }
         }
