@@ -1,14 +1,17 @@
 package net.iessochoa.sergiocontreras.pcdealguien.ui
-
-import net.iessochoa.sergiocontreras.pcdealguien.data.PokemonSpecies
+//7
+import net.iessochoa.sergiocontreras.pcdealguien.network.PokemonDto
 
 
 data class PokemonScreenUiState (
-    val pokemonList: List<PokemonSpecies> = emptyList(),
+    val selectedGeneration: Int = 1,
+    val totalGeneration: Int = 1,
+    val currentState: RequestStatus = RequestStatus.Idle
+    )
 
-    // Un booleano para saber si estamos cargando (Opcional pero recomendado)
-    val isLoading: Boolean = false,
-
-    // Podríamos añadir un mensaje de error si quisiéramos
-    val errorMessage: String? = null
-)
+sealed interface RequestStatus{
+    object isLoading: RequestStatus
+    data class Success(val pokemonList: List<PokemonDto>): RequestStatus
+    object Error : RequestStatus
+    object Idle: RequestStatus
+}
