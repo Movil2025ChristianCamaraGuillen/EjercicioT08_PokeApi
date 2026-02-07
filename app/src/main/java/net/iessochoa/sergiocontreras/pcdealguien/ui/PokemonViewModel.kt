@@ -24,6 +24,22 @@ class PokemonViewModel(
 
     private val repository = pokemonRepository
 
+    init {
+        fetchGenerations()
+    }
+
+
+    private fun fetchGenerations() {
+        viewModelScope.launch {
+            try {
+                val generations = repository.getGenerations()
+                _uiState.update { it.copy(totalGeneration = generations.size) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     // Función para llamar a la API
     fun fetchPokemonByGeneration(generationId: Int) {
         viewModelScope.launch {
