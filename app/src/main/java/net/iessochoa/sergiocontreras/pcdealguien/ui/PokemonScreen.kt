@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -45,12 +46,8 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(factory = PokemonViewM
     val currentState = uiState.currentState
     val totalGeneration = uiState.totalGeneration
 
-    //val pokemonList = uiState.pokemonList
-
-    // Variables para el Dropdown (UI ya resuelta)
+    // Variables para el Dropdown
     var expanded by remember { mutableStateOf(false) }
-    //var selectedGen by remember { mutableStateOf(1) }
-    //val generations = (1..8).toList() // 8 Generaciones
 
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
@@ -60,7 +57,7 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(factory = PokemonViewM
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- SELECTOR DE GENERACIÓN (Ya implementado) ---
+        // --- SELECTOR DE GENERACIÓN
         DynamicSelectTextField(
             selectedValue = selectedGen.toString(),
             options = (1..totalGeneration).toList().map { it.toString() },
@@ -83,6 +80,32 @@ fun PokemonScreen(viewModel: PokemonViewModel = viewModel(factory = PokemonViewM
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Gestión de estado, para mostrar algo mientras se está cargando
+
+        when (val state = currentState) {
+            is RequestStatus.isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is RequestStatus.Success -> {
+                LazyVerticalGrid(
+                    modifier = Modifier.weight(1f),
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(state.pokemonList) { pokemon ->
+                        PokemonItem(pokemon)
+                    }
+                }
+            }
+            is RequestStatus.Error -> {
+                Text("Error al cargar los Pokemon", color = Color.Red)
+            }
+            else -> {}
+        }
 
         // --- LISTA DE RESULTADOS ---
         if (uiState.currentState is RequestStatus.Success){
